@@ -1,4 +1,4 @@
-package at.stnwtr.asboet
+package at.stnwtr.asboet.duty
 
 import java.time.LocalTime
 

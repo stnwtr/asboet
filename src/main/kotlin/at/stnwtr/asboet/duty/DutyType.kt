@@ -1,4 +1,4 @@
-package at.stnwtr.asboet
+package at.stnwtr.asboet.duty
 
 enum class DutyType(val id: String) {
     VEHICLE_340("62/340"),

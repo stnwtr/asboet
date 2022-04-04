@@ -1,4 +1,4 @@
-package at.stnwtr.asboet
+package at.stnwtr.asboet.duty
 
 import java.time.LocalDate
 
@@ -7,9 +7,13 @@ data class Duty(
     val dutyType: DutyType,
     val dutyTime: DutyTime,
     val drivers: Set<DutyWorker>,
-    val firstParamedic: Set<DutyWorker>,
-    val secondParamedic: Set<DutyWorker>
+    val firstParamedics: Set<DutyWorker>,
+    val secondParamedics: Set<DutyWorker>
 ) {
+    fun hasDuty(name: String): Boolean {
+        return (drivers + firstParamedics + secondParamedics).map(DutyWorker::name).contains(name)
+    }
+
     companion object {
         fun of(
             date: LocalDate,
