@@ -1,9 +1,10 @@
 package at.stnwtr.asboet.duty
 
+import com.fasterxml.jackson.annotation.JsonFormat
 import java.time.LocalDate
 
 data class Duty(
-    val date: LocalDate,
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd") val date: LocalDate,
     val dutyType: DutyType,
     val dutyTime: DutyTime,
     val drivers: Set<DutyWorker>,

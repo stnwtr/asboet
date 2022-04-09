@@ -19,16 +19,17 @@ repositories {
 }
 
 dependencies {
-    // https://mvnrepository.com/artifact/io.javalin/javalin
+    // Webserver
     implementation("io.javalin:javalin:4.4.0")
 
-    // https://mvnrepository.com/artifact/com.fasterxml.jackson.module/jackson-module-kotlin
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.13.2")
-
-    // https://mvnrepository.com/artifact/org.slf4j/slf4j-simple
+    // Logging
     implementation("org.slf4j:slf4j-simple:1.7.36")
 
-    // https://mvnrepository.com/artifact/org.jsoup/jsoup
+    // Json mapper
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.13.2")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.13.2")
+
+    // HTML parser
     implementation("org.jsoup:jsoup:1.14.3")
 }
 

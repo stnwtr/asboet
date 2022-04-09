@@ -4,8 +4,8 @@ import at.stnwtr.asboet.duty.Duty
 import at.stnwtr.asboet.duty.DutyTime
 import at.stnwtr.asboet.duty.DutyType
 import at.stnwtr.asboet.duty.DutyWorker
-import at.stnwtr.asboet.extension.asDMJDate
-import at.stnwtr.asboet.extension.asHMTime
+import at.stnwtr.asboet.extension.asDate
+import at.stnwtr.asboet.extension.asTime
 import at.stnwtr.asboet.extension.textList
 import at.stnwtr.asboet.extension.toDutyUrl
 import org.jsoup.Jsoup
@@ -138,7 +138,7 @@ class Roster(
         val trs = table.select("tr")
 
         return trs.asSequence().drop(1)
-            .map { it.select("td").first()?.text()?.asDMJDate() }
+            .map { it.select("td").first()?.text()?.asDate("dd.MM.yyyy")}
             .filterNotNull()
             .toSet()
     }
@@ -181,6 +181,6 @@ class Roster(
 
     private fun parseWorker(name: String, time: String): DutyWorker {
         val timeSpan = time.split(" ")[0].split("-")
-        return DutyWorker(name, timeSpan[0].asHMTime(), timeSpan[1].asHMTime())
+        return DutyWorker(name, timeSpan[0].asTime("HH:mm"), timeSpan[1].asTime("HH:mm"))
     }
 }
