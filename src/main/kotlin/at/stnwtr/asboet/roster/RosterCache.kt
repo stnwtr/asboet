@@ -12,13 +12,13 @@ object RosterCache {
     }
 
     fun loadRoster(username: String, password: String): Roster {
-        removeUnused()
-
         val roster = cache.filterKeys { it.username == username && it.password == password }
             .entries
             .firstOrNull()?.key ?: Roster(username, password)
 
         cache[roster] = Instant.now()
+
+        removeUnused()
 
         return roster
     }
