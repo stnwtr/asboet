@@ -16,6 +16,7 @@ import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse.BodyHandlers
 import java.time.LocalDate
+import java.util.concurrent.CompletableFuture
 import kotlin.streams.asSequence
 
 class Roster(
@@ -87,7 +88,7 @@ class Roster(
         return loggedIn()
     }
 
-    fun dutiesForDay(date: LocalDate): Set<Duty>? {
+    private fun dutiesForDay(date: LocalDate): Set<Duty>? {
         if (!tryLogIn()) {
             return null
         }
@@ -112,7 +113,11 @@ class Roster(
         return dayDuties + nightDuties
     }
 
-    fun dutiesInRange(from: LocalDate, to: LocalDate): Set<Duty>? {
+    fun dutiesForDayAsync(date: LocalDate): CompletableFuture<Set<Duty>?> {
+        return CompletableFuture.supplyAsync { dutiesForDay(date) }
+    }
+
+    private fun dutiesInRange(from: LocalDate, to: LocalDate): Set<Duty>? {
         if (!tryLogIn()) {
             return null
         }
@@ -120,6 +125,10 @@ class Roster(
         return from.datesUntil(to.plusDays(1)).asSequence().map { dutiesForDay(it)!! }
             .flatten()
             .toSet()
+    }
+
+    fun dutiesInRangeAsync(from: LocalDate, to: LocalDate): CompletableFuture<Set<Duty>?> {
+        return CompletableFuture.supplyAsync { dutiesInRange(from, to) }
     }
 
     private fun personalDutyDates(): Set<LocalDate>? {
@@ -143,7 +152,7 @@ class Roster(
             .toSet()
     }
 
-    fun personalDuties(): Set<Duty>? {
+    private fun personalDuties(): Set<Duty>? {
         if (!tryLogIn()) {
             return null
         }
@@ -153,6 +162,10 @@ class Roster(
             .flatMap { dutiesForDay(it)!! }
             .filter { it.hasDuty(name) }
             .toSet()
+    }
+
+    fun personalDutiesAsync(): CompletableFuture<Set<Duty>?> {
+        return CompletableFuture.supplyAsync { personalDuties() }
     }
 
     // Helper methods for parsing ROWs

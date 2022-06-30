@@ -20,49 +20,52 @@ fun main() {
         }
 
         path("/api/v1") {
-            get("/duty") {
-                val username = it.queryParam("username")
-                val password = it.queryParam("password")
-                val date = it.queryParam("date")?.asDate() ?: throw BadRequestResponse()
+            get("/duty") { context ->
+                val username = context.queryParam("username")
+                val password = context.queryParam("password")
+                val date = context.queryParam("date")?.asDate() ?: throw BadRequestResponse()
 
                 if (username.isNullOrEmpty() || password.isNullOrEmpty()) {
                     throw BadRequestResponse()
                 }
 
                 val roster = RosterCache.loadRoster(username, password)
-                val duties = roster.dutiesForDay(date) ?: throw ForbiddenResponse()
 
-                it.json(duties)
+                context.future(roster.dutiesForDayAsync(date)) {
+                    context.json(it ?: throw ForbiddenResponse())
+                }
             }
 
-            get("/personal") {
-                val username = it.queryParam("username")
-                val password = it.queryParam("password")
+            get("/personal") { context ->
+                val username = context.queryParam("username")
+                val password = context.queryParam("password")
 
                 if (username.isNullOrEmpty() || password.isNullOrEmpty()) {
                     throw BadRequestResponse()
                 }
 
                 val roster = RosterCache.loadRoster(username, password)
-                val duties = roster.personalDuties() ?: throw ForbiddenResponse()
 
-                it.json(duties)
+                context.future(roster.personalDutiesAsync()) {
+                    context.json(it ?: throw ForbiddenResponse())
+                }
             }
 
-            get("/range") {
-                val username = it.queryParam("username")
-                val password = it.queryParam("password")
-                val from = it.queryParam("from")?.asDate() ?: throw BadRequestResponse()
-                val to = it.queryParam("to")?.asDate() ?: throw BadRequestResponse()
+            get("/range") { context ->
+                val username = context.queryParam("username")
+                val password = context.queryParam("password")
+                val from = context.queryParam("from")?.asDate() ?: throw BadRequestResponse()
+                val to = context.queryParam("to")?.asDate() ?: throw BadRequestResponse()
 
                 if (username.isNullOrEmpty() || password.isNullOrEmpty()) {
                     throw BadRequestResponse()
                 }
 
                 val roster = RosterCache.loadRoster(username, password)
-                val duties = roster.dutiesInRange(from, to) ?: throw ForbiddenResponse()
 
-                it.json(duties)
+                context.future(roster.dutiesInRangeAsync(from, to)) {
+                    context.json(it ?: throw ForbiddenResponse())
+                }
             }
         }
     }
