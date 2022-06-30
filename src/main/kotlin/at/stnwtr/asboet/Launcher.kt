@@ -16,7 +16,7 @@ fun main() {
 
     javalin.routes {
         before("*") {
-            JavalinLogger.info("${LocalDateTime.now()} -> ${it.ip()} -> ${it.fullUrl()}")
+            JavalinLogger.info("${LocalDateTime.now()} -> ${it.fullUrl()}")
         }
 
         path("/api/v1") {
@@ -56,6 +56,10 @@ fun main() {
                 val password = context.queryParam("password")
                 val from = context.queryParam("from")?.asDate() ?: throw BadRequestResponse()
                 val to = context.queryParam("to")?.asDate() ?: throw BadRequestResponse()
+
+                if (to.isBefore(from)) {
+                    throw BadRequestResponse()
+                }
 
                 if (username.isNullOrEmpty() || password.isNullOrEmpty()) {
                     throw BadRequestResponse()
