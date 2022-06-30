@@ -20,14 +20,14 @@ repositories {
 
 dependencies {
     // Webserver
-    implementation("io.javalin:javalin:4.4.0")
+    implementation("io.javalin:javalin:4.6.1")
 
     // Logging
     implementation("org.slf4j:slf4j-simple:1.7.36")
 
     // Json mapper
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.13.2")
-    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.13.2")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.13.3")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.13.3")
 
     // HTML parser
     implementation("org.jsoup:jsoup:1.14.3")

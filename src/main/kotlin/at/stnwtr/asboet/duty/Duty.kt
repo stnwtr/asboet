@@ -7,9 +7,9 @@ data class Duty(
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd") val date: LocalDate,
     val dutyType: DutyType,
     val dutyTime: DutyTime,
-    val drivers: Set<DutyWorker>,
-    val firstParamedics: Set<DutyWorker>,
-    val secondParamedics: Set<DutyWorker>
+    val drivers: List<DutyWorker>,
+    val firstParamedics: List<DutyWorker>,
+    val secondParamedics: List<DutyWorker>
 ) {
     fun hasDuty(name: String): Boolean {
         return (drivers + firstParamedics + secondParamedics).map(DutyWorker::name).contains(name)
@@ -20,18 +20,9 @@ data class Duty(
             date: LocalDate,
             dutyType: DutyType,
             dutyTime: DutyTime,
-            drivers: Set<DutyWorker>,
-            firstParamedic: Set<DutyWorker>,
-            secondParamedic: Set<DutyWorker>
+            drivers: List<DutyWorker>,
+            firstParamedic: List<DutyWorker>,
+            secondParamedic: List<DutyWorker>
         ) = Duty(date, dutyType, dutyTime, drivers, firstParamedic, secondParamedic)
-
-        val UNKNOWN = of(
-            LocalDate.MIN,
-            DutyType.UNKNOWN,
-            DutyTime.UNKNOWN,
-            emptySet(),
-            emptySet(),
-            emptySet()
-        )
     }
 }

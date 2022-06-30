@@ -6,8 +6,8 @@ import at.stnwtr.asboet.duty.DutyType
 import at.stnwtr.asboet.duty.DutyWorker
 import at.stnwtr.asboet.extension.asDate
 import at.stnwtr.asboet.extension.asTime
-import at.stnwtr.asboet.extension.textList
 import at.stnwtr.asboet.extension.toDutyUrl
+import io.javalin.core.util.Header
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import java.net.CookieManager
@@ -19,8 +19,8 @@ import java.time.LocalDate
 import kotlin.streams.asSequence
 
 class Roster(
-    private val username: String,
-    private val password: String
+    val username: String,
+    val password: String
 ) {
     private val client = HttpClient.newBuilder()
         .cookieHandler(CookieManager())
@@ -53,7 +53,7 @@ class Roster(
         val request = HttpRequest.newBuilder()
             .uri(URI.create("https://lv.svs-system.at/index.svs?do=login"))
             .POST(HttpRequest.BodyPublishers.ofString("username=$username&password=$password"))
-            .header("content-type", "application/x-www-form-urlencoded")
+            .header(Header.CONTENT_TYPE, "application/x-www-form-urlencoded")
             .build()
 
         client.send(request, BodyHandlers.discarding())
@@ -117,7 +117,7 @@ class Roster(
             return null
         }
 
-        return from.datesUntil(to).asSequence().map { dutiesForDay(it)!! }
+        return from.datesUntil(to.plusDays(1)).asSequence().map { dutiesForDay(it)!! }
             .flatten()
             .toSet()
     }
@@ -138,7 +138,7 @@ class Roster(
         val trs = table.select("tr")
 
         return trs.asSequence().drop(1)
-            .map { it.select("td").first()?.text()?.asDate("dd.MM.yyyy")}
+            .map { it.select("td").first()?.text()?.asDate("dd.MM.yyyy") }
             .filterNotNull()
             .toSet()
     }
@@ -160,27 +160,22 @@ class Roster(
         date,
         DutyType.of(row.child(1).html().split("<br>")[0]),
         time,
-        parseWorkerSet(row.child(2).textList()),
-        parseWorkerSet(row.child(3).textList()),
-        parseWorkerSet(row.child(4).textList()),
+        parseWorkerRow(row.child(2).html()),
+        parseWorkerRow(row.child(3).html()),
+        parseWorkerRow(row.child(4).html()),
     )
 
-    private fun parseWorkerSet(text: List<String>): Set<DutyWorker> {
-        return if (text.size == 2) {
-            emptySet()
-        } else if (text.size == 4) {
-            setOf(parseWorker(text[0], text[1]), parseWorker(text[2], text[3]))
-        } else if (text[0] == "eintragen") {
-            setOf(parseWorker(text[1], text[2]))
-        } else if (text[2] == "eintragen") {
-            setOf(parseWorker(text[0], text[1]))
-        } else {
-            emptySet()
-        }
+    private fun parseWorkerRow(row: String): List<DutyWorker> {
+        return row.split("<br>")
+            .asSequence().map { Jsoup.parse(it).text() }
+            .chunked(2)
+            .filter { it[1].contains("Uhr") }
+            .map { parseWorker(it[0], it[1]) }
+            .toList()
     }
 
     private fun parseWorker(name: String, time: String): DutyWorker {
         val timeSpan = time.split(" ")[0].split("-")
-        return DutyWorker(name, timeSpan[0].asTime("HH:mm"), timeSpan[1].asTime("HH:mm"))
+        return DutyWorker(name, timeSpan[0].asTime(), timeSpan[1].asTime())
     }
 }
