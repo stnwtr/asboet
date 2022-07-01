@@ -1,14 +1,19 @@
 package at.stnwtr.asboet.roster
 
+import io.javalin.core.security.BasicAuthCredentials
 import java.time.Duration
 import java.time.Instant
 
 object RosterCache {
+    private val CACHE_DURATION = Duration.ofHours(1)
+
     private val cache = mutableMapOf<Roster, Instant>()
 
     private fun removeUnused() {
         cache.entries
-            .removeIf { it.value.plus(Duration.ofHours(1)).isBefore(Instant.now()) }
+            .removeIf {
+                it.value.plus(CACHE_DURATION).isBefore(Instant.now())
+            }
     }
 
     fun loadRoster(username: String, password: String): Roster {
@@ -22,4 +27,7 @@ object RosterCache {
 
         return roster
     }
+
+    fun loadRoster(basicAuthCredentials: BasicAuthCredentials) =
+        loadRoster(basicAuthCredentials.username, basicAuthCredentials.password)
 }

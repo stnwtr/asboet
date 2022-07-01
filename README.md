@@ -6,7 +6,9 @@ Very small API to fetch next duties from [lv.svs](https://lv.svs-system.at/).
 
 Here a list of all entities.
 
-**DutyType**
+### DutyType
+
+The type (car, office, ...) the worker is on.
 
 ```graphql
 enum DutyType {
@@ -19,21 +21,23 @@ enum DutyType {
     OFFICE
     JOURNAL
     OTHER
-    UNKNOWN
 }
 ```
 
-**DutyTime**
+### DutyTime
+
+Day or night shift.
 
 ```graphql
 enum DutyTime {
     DAY
     NIGHT
-    UNKNOWN
 }
 ```
 
-**DutyWorker**
+### DutyWorker
+
+A worker represented by name and the working times.
 
 ```graphql
 type DutyWorker {
@@ -43,7 +47,9 @@ type DutyWorker {
 }
 ```
 
-**Duty**
+### Duty
+
+A whole duty with all possible properties.
 
 ```graphql
 type Duty {
@@ -58,50 +64,43 @@ type Duty {
 
 ## Endpoints
 
-List of endpoints (so far ...). (())
+A list of endpoints (so far ...).
 
-**/duty**
+### /duties?date={date}
 
 Used to get a list of duties for a specific day.
 
-Example: `https://localhost:62461/api/v1/duty?username=flastname&password=secret&date=2022-06-30`
+| Query Param | Description                   |
+|-------------|-------------------------------|
+| `date`      | The date in yyyy-MM-dd format |
 
-| Query Param | Description                 |
-|-------------|-----------------------------|
-| `username`  | Simply the username         |
-| `password`  | The right password          |
-| `date`      | A date in yyyy-MM-dd format |
+Example: `https://localhost:62461/api/v1/duties?date=2022-07-01`
 
 Returns `200 OK` with a body: `[Duty]!` or `400 Bad Request` or `403 Forbidden`.
 
-**/personal**
-
-Get your personal duty list.
-
-Example: `https://localhost:62461/api/v1/personal?username=flastname&password=secret`
-
-| Query Param | Description                 |
-|-------------|-----------------------------|
-| `username`  | Simply the username         |
-| `password`  | The right password          |
-
-Returns `200 OK` with a body: `[Duty]!` or `400 Bad Request` or `403 Forbidden`.
-
-**/range**
+### /range?from={from}&to={to}
 
 List all duties between two dates.
 
-Example: `https://localhost:62461/api/v1/range?username=flastname&password=secret&from=2022-06-28&to=2022-07-10`
-
 | Query Param | Description                        |
 |-------------|------------------------------------|
-| `username`  | Simply the username                |
-| `password`  | The right password                 |
 | `from`      | The beginning in yyyy-MM-dd format |
 | `to`        | The end date in yyyy-MM-dd format  |
 
+Example: `https://localhost:62461/api/v1/range?from=2022-06-27&to=2022-07-03`
+
 Returns `200 OK` with a body: `[Duty]!` or `400 Bad Request` or `403 Forbidden`.
 
-## Swagger
+### /personal
 
-// TBD
+Get your personal duty list.
+
+Example: `https://localhost:62461/api/v1/personal`
+
+Returns `200 OK` with a body: `[Duty]!` or `400 Bad Request` or `403 Forbidden`.
+
+## Authentication
+
+Basic authentication is needed in order to fetch any duties. The header field `Authorization` is doing this job.
+
+Example: `Authorization: Basic dXNlcm5hbWU6cGFzc3dvcmQ=`

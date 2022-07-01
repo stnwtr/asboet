@@ -9,12 +9,11 @@ enum class DutyType(val id: String) {
     VEHICLE_345("62/345"),
     OFFICE("Büro"),
     JOURNAL("Journal"),
-    OTHER("U/ZA/KR HA/ZDL"),
-    UNKNOWN("");
+    OTHER("U/ZA/KR HA/ZDL");
 
     companion object {
         fun of(id: String): DutyType {
-            return values().firstOrNull { it.id == id } ?: UNKNOWN
+            return values().first { it.id == id }
         }
     }
 }

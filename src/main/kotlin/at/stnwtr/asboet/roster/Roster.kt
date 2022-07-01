@@ -19,17 +19,14 @@ import java.time.LocalDate
 import java.util.concurrent.CompletableFuture
 import kotlin.streams.asSequence
 
-class Roster(
-    val username: String,
-    val password: String
-) {
+class Roster(val username: String, val password: String) {
     private val client = HttpClient.newBuilder()
         .cookieHandler(CookieManager())
         .build()
 
-    private var name: String = "UNKNOWN"
+    private var name: String = "NOT_LOGGED_IN"
         get() {
-            if (field != "UNKNOWN") {
+            if (field != "NOT_LOGGED_IN") {
                 return field
             }
 
@@ -43,7 +40,7 @@ class Roster(
             val soup = Jsoup.parse(responseBody)
                 .select("#leftColumnx center img")
 
-            if (field == "UNKNOWN" && soup.isNotEmpty()) {
+            if (soup.isNotEmpty()) {
                 field = soup.attr("title").trim()
             }
 
@@ -80,7 +77,7 @@ class Roster(
         return responseBody.contains("Logout")
     }
 
-    private fun tryLogIn(): Boolean {
+    fun tryLogin(): Boolean {
         if (!loggedIn()) {
             login()
         }
@@ -88,11 +85,7 @@ class Roster(
         return loggedIn()
     }
 
-    private fun dutiesForDay(date: LocalDate): Set<Duty>? {
-        if (!tryLogIn()) {
-            return null
-        }
-
+    private fun dutiesForDay(date: LocalDate): Set<Duty> {
         val request = HttpRequest.newBuilder()
             .uri(URI.create(date.toDutyUrl()))
             .GET()
@@ -113,29 +106,21 @@ class Roster(
         return dayDuties + nightDuties
     }
 
-    fun dutiesForDayAsync(date: LocalDate): CompletableFuture<Set<Duty>?> {
-        return CompletableFuture.supplyAsync { dutiesForDay(date) }
-    }
+    fun dutiesForDayAsync(date: LocalDate): CompletableFuture<Set<Duty>> =
+        CompletableFuture.supplyAsync { dutiesForDay(date) }
 
-    private fun dutiesInRange(from: LocalDate, to: LocalDate): Set<Duty>? {
-        if (!tryLogIn()) {
-            return null
-        }
-
-        return from.datesUntil(to.plusDays(1)).asSequence().map { dutiesForDay(it)!! }
+    private fun dutiesInRange(from: LocalDate, to: LocalDate): Set<Duty> {
+        return from.datesUntil(to.plusDays(1))
+            .asSequence()
+            .map { dutiesForDay(it) }
             .flatten()
             .toSet()
     }
 
-    fun dutiesInRangeAsync(from: LocalDate, to: LocalDate): CompletableFuture<Set<Duty>?> {
-        return CompletableFuture.supplyAsync { dutiesInRange(from, to) }
-    }
+    fun dutiesInRangeAsync(from: LocalDate, to: LocalDate): CompletableFuture<Set<Duty>> =
+        CompletableFuture.supplyAsync { dutiesInRange(from, to) }
 
-    private fun personalDutyDates(): Set<LocalDate>? {
-        if (!tryLogIn()) {
-            return null
-        }
-
+    private fun personalDutyDates(): Set<LocalDate> {
         val request = HttpRequest.newBuilder()
             .uri(URI.create("https://lv.svs-system.at/main.svs?do=&mod=dienstplan_4&dp=8"))
             .GET()
@@ -152,21 +137,16 @@ class Roster(
             .toSet()
     }
 
-    private fun personalDuties(): Set<Duty>? {
-        if (!tryLogIn()) {
-            return null
-        }
-
-        return personalDutyDates()!!
+    private fun personalDuties(): Set<Duty> {
+        return personalDutyDates()
             .asSequence()
-            .flatMap { dutiesForDay(it)!! }
+            .flatMap { dutiesForDay(it) }
             .filter { it.hasDuty(name) }
             .toSet()
     }
 
-    fun personalDutiesAsync(): CompletableFuture<Set<Duty>?> {
-        return CompletableFuture.supplyAsync { personalDuties() }
-    }
+    fun personalDutiesAsync(): CompletableFuture<Set<Duty>> =
+        CompletableFuture.supplyAsync { personalDuties() }
 
     // Helper methods for parsing ROWs
     private fun rowToDuty(row: Element, date: LocalDate, time: DutyTime) = Duty(
@@ -180,7 +160,8 @@ class Roster(
 
     private fun parseWorkerRow(row: String): List<DutyWorker> {
         return row.split("<br>")
-            .asSequence().map { Jsoup.parse(it).text() }
+            .asSequence()
+            .map { Jsoup.parse(it).text() }
             .chunked(2)
             .filter { it[1].contains("Uhr") }
             .map { parseWorker(it[0], it[1]) }
