@@ -4,8 +4,7 @@ import at.stnwtr.asboet.access.AccessManager
 import at.stnwtr.asboet.access.Role
 import at.stnwtr.asboet.roster.RosterController
 import io.javalin.Javalin
-import io.javalin.apibuilder.ApiBuilder.get
-import io.javalin.apibuilder.ApiBuilder.path
+import io.javalin.apibuilder.ApiBuilder.*
 
 fun main() {
     val javalin = Javalin.create {
