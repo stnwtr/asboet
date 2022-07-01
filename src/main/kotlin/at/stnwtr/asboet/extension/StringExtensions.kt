@@ -18,4 +18,3 @@ fun String.asTime(pattern: String = "HH:mm"): LocalTime {
     val formatter = DateTimeFormatter.ofPattern(pattern)
     return LocalTime.parse(this, formatter)
 }
-

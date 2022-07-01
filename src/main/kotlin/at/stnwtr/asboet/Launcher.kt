@@ -1,75 +1,26 @@
 package at.stnwtr.asboet
 
-import at.stnwtr.asboet.extension.asDate
-import at.stnwtr.asboet.roster.RosterCache
+import at.stnwtr.asboet.access.AccessManager
+import at.stnwtr.asboet.access.Role
+import at.stnwtr.asboet.roster.RosterController
 import io.javalin.Javalin
-import io.javalin.apibuilder.ApiBuilder.*
-import io.javalin.core.util.JavalinLogger
-import io.javalin.http.BadRequestResponse
-import io.javalin.http.ForbiddenResponse
-import java.time.LocalDateTime
+import io.javalin.apibuilder.ApiBuilder.get
+import io.javalin.apibuilder.ApiBuilder.path
 
 fun main() {
     val javalin = Javalin.create {
         it.enableCorsForAllOrigins()
+        it.accessManager(AccessManager())
     }
 
+    val controller = RosterController()
+
     javalin.routes {
-        before("*") {
-            JavalinLogger.info("${LocalDateTime.now()} -> ${it.fullUrl()}")
-        }
-
-        path("/api/v1") {
-            get("/duty") { context ->
-                val username = context.queryParam("username")
-                val password = context.queryParam("password")
-                val date = context.queryParam("date")?.asDate() ?: throw BadRequestResponse()
-
-                if (username.isNullOrEmpty() || password.isNullOrEmpty()) {
-                    throw BadRequestResponse()
-                }
-
-                val roster = RosterCache.loadRoster(username, password)
-
-                context.future(roster.dutiesForDayAsync(date)) {
-                    context.json(it ?: throw ForbiddenResponse())
-                }
-            }
-
-            get("/personal") { context ->
-                val username = context.queryParam("username")
-                val password = context.queryParam("password")
-
-                if (username.isNullOrEmpty() || password.isNullOrEmpty()) {
-                    throw BadRequestResponse()
-                }
-
-                val roster = RosterCache.loadRoster(username, password)
-
-                context.future(roster.personalDutiesAsync()) {
-                    context.json(it ?: throw ForbiddenResponse())
-                }
-            }
-
-            get("/range") { context ->
-                val username = context.queryParam("username")
-                val password = context.queryParam("password")
-                val from = context.queryParam("from")?.asDate() ?: throw BadRequestResponse()
-                val to = context.queryParam("to")?.asDate() ?: throw BadRequestResponse()
-
-                if (to.isBefore(from)) {
-                    throw BadRequestResponse()
-                }
-
-                if (username.isNullOrEmpty() || password.isNullOrEmpty()) {
-                    throw BadRequestResponse()
-                }
-
-                val roster = RosterCache.loadRoster(username, password)
-
-                context.future(roster.dutiesInRangeAsync(from, to)) {
-                    context.json(it ?: throw ForbiddenResponse())
-                }
+        path("/api") {
+            path("/v1") {
+                get("/duties", controller::dutiesForDay, Role.AUTHENTICATED)
+                get("/range", controller::dutiesInRange, Role.AUTHENTICATED)
+                get("/personal", controller::personalDuties, Role.AUTHENTICATED)
             }
         }
     }
